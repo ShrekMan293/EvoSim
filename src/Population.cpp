@@ -158,10 +158,146 @@ double Population::getAverageMutationRate()
 	return averageMut / this->count;
 }
 
-void Population:: simYear() {
+static bool attractivenessTest(entity male, entity female) {
+	double att_score0 = ((male.attractiveness * male.fitness) + male.attractiveness) / 5;
+	double att_score1 = ((female.attractiveness * female.fitness) + female.attractiveness) / 5;
+
+	return att_score0 > att_score1 || att_score1 - att_score0 < 0.1;
+}
+
+int Population::getOldest() {
+	int oldest = 0;
+	for (size_t i = 0; i < this->count; i++)
+	{
+		if (this->population[i].age > oldest) oldest = this->population[i].age;
+	}
+	return oldest;
+}
+
+size_t Population::getBirths() {
+	return this->newBabies;
+}
+
+size_t Population::getDeaths() {
+	return this->deaths;
+}
+
+growth_t Population::growthRate() {
+	growth_t g;
+	g.growth_double = ((double)this->newBabies - (double)this->deaths) / (double)this->lastPopulation;
+	g.growth_int = this->newBabies - this->deaths;
+	return g;
+}
+
+void Population::simYear() {
+	this->year++;
+	this->lastPopulation = this->count;
+	this->newBabies = 0;
+	this->deaths = 0;
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<double> rand{ 0.00, 0.40 };
+	std::uniform_real_distribution<double> rand2{ 0.00, 0.30 };
+	std::uniform_real_distribution<double> rand3{ 0.00, 0.60 };
+	std::uniform_real_distribution<double> rand4{ 0.00, 2.00 };
+	std::uniform_real_distribution<double> rand5{ 0.00, 1.00 };
+
+	std::uniform_real_distribution<double> extinction{ 0.000000, 1.000000 };
+
+	double fitnessThreshold = (rand(gen) + rand2(gen) + rand3(gen) + rand4(gen)) / 4;
+	double mass_extinction = extinction(gen);
+
+	if (mass_extinction < 0.02) {
+		const double death_rate = 0.85;	// 85% of the population will be killed
+
+		for (size_t i = 0; i < this->count * death_rate; i++)
+		{
+			killEntity(i);
+		}
+		for (size_t i = 0; i < this->count; i++)
+		{
+			double value = rand5(gen);
+			if (this->population[i].fitness < value) this->population[i].fitness = 0;
+			else this->population[i].fitness -= value;
+
+			value = rand5(gen);
+			if (this->population[i].fertility < value) this->population[i].fertility = 0;
+			else this->population[i].fertility -= value;
+		}
+
+		std::cout << "Mass Extinction Event in year " << this->year << '\n';
+	}
+
+	for (size_t i = 0; i < this->count; i++)
+	{
+
+	}
+
+	for (size_t i = 0; i < this->count; i++)
+	{
+		if (this->population[i].fitness < fitnessThreshold) {
+			this->deaths++;
+			killEntity(i);
+			continue;
+		}
+		if (this->population[i].age++ == 20) {
+			this->deaths++;
+			killEntity(i);
+			continue;
+		}
+	}
+	for (size_t i = 0; i < this->count; i++)
+	{
+		int female = 0;
+		if (this->population[i].gender || this->population[i].age < 5) continue;
+
+		for (size_t j = 0; j < this->count; j++)
+		{
+			if (!this->population[j].gender || this->population[j].age < 5) continue;
+			female = j; break;
+		}
+
+		for (size_t j = 0; j < 3; j++)
+		{
+			if (attractivenessTest(this->population[i], this->population[female])) {
+				for (size_t k = 0; k < 3; k++)
+				{
+					double value = rand4(gen);
+					if (this->population[i].fertility >= value && this->population[female].fitness >= value) {
+						addEntity(entity(this->population[i], this->population[female]));
+						this->newBabies++;
+						break;
+					}
+				}
+				if (this->population[i].fitness < 0.05) this->population[i].fitness = 0;
+				else this->population[i].fitness -= 0.05;
+			}
+		}
+	}
 
 }
 
 void Population::deletePopulation() {
-	::operator delete[](this->population);
+	std::free((void*)this->population);
+}
+
+size_t Population::getMales() const {
+	size_t count = 0;
+
+	for (size_t i = 0; i < this->count; i++)
+	{
+		if (!this->population[i].gender) count++;
+	}
+
+	return count;
+}
+size_t Population::getFemales() const {
+	size_t count = 0;
+
+	for (size_t i = 0; i < this->count; i++)
+	{
+		if (this->population[i].gender) count++;
+	}
+
+	return count;
 }

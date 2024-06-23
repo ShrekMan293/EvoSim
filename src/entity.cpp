@@ -1,6 +1,7 @@
 #include "entity.h"
 
 entity::entity() {
+	this->age = 0;
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<double> rand{ 0.00, 1.00 };
@@ -24,9 +25,12 @@ entity::entity() {
 	this->init_attractiveness = this->attractiveness;
 	this->init_fertility = this->fertility;
 	this->init_fitness = this->fitness;
+	std::uniform_int_distribution<int> brand{ 0, 1 };
+	this->gender = brand(gen);
 }
 
 entity::entity(entity father, entity mother) {
+	this->age = 0;
 	int index = 0;
 	int i = -1;
 
@@ -49,8 +53,9 @@ entity::entity(entity father, entity mother) {
 	this->init_attractiveness = this->attractiveness;
 	this->init_fertility = this->fertility;
 	this->init_fitness = this->fitness;
+	this->gender = rand(gen);
 }
 
-gene entity::getGene(int index) {
+gene entity::getGene(int index) const {
 	return this->genome[index];
 }

@@ -4,9 +4,14 @@ Low Metabolism=low fitness if high food
 
 Attractiveness Score:
 
-((a / f) + a) / 5
+((a * f) + a) / 5
 a is attractiveness
 f is fitness
+
+Mutual Attractiveness:
+
+If male passes, female att score
+must be within 0.2 of male att score
 
 Reproductive Process:
 
@@ -15,5 +20,6 @@ Males get 3 tries to reproduce
 Must pass 3 criteria to pass
 	1. Valid Female (exists between 0 and 1048576)
 	2. Pass the Attractiveness Test
-	3. Successfully mate
-If Failure, lose 10 fitness and 20 happiness
+	3. Mutual Attractiveness
+	4. Successfully mate
+If Failure, lose 10 fitness
