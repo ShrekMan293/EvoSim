@@ -6,21 +6,25 @@
 class Population
 {
 	entity* population;
-	size_t generation;
+	size_t year;
 	size_t count;
+	size_t maxSize;
 public:
 	Population(int count);
 	void killEntity(size_t id);
 	void addEntity(entity e);
 
 	gene mostCommonGene();
-	gene leastCommonGene();
 
 	size_t getPopulationSize();
-	size_t getGeneration();
+	size_t getYear();
 
-	float getAverageFitness();
-	float getAverageAttractiveness();
-	float getAverageFertility();
-	float getAverageMutationRate();
+	double getAverageFitness();
+	double getAverageAttractiveness();
+	double getAverageFertility();
+	double getAverageMutationRate();
+
+	void simYear();
+
+	void deletePopulation();
 };

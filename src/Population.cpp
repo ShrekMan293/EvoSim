@@ -1,9 +1,10 @@
-#include "Population.h"
+ #include "Population.h"
 
 Population::Population(int count) {
 	this->count = 0;
-	this->generation = 1;
-	this->population = new entity[8];
+	this->year = 0;
+	this->population = static_cast<entity*>(std::calloc(1048576, sizeof(entity)));
+	this->maxSize = 1024;
 
 	for (size_t i = 0; i < count; i++)
 	{
@@ -99,4 +100,68 @@ gene Population::mostCommonGene() {
 	average /= count;
 
 	return gene(mostCommon, average);
+}
+
+size_t Population::getPopulationSize() {
+	return this->count;
+}
+
+size_t Population::getYear() {
+	return this->year;
+}
+
+double Population::getAverageFitness()
+{
+	double averageFitness = 0;
+
+	for (size_t i = 0; i < this->count; i++)
+	{
+		averageFitness += this->population[i].fitness;
+	}
+
+	return averageFitness / this->count;
+}
+
+double Population::getAverageAttractiveness()
+{
+	double averageAttr = 0;
+
+	for (size_t i = 0; i < this->count; i++)
+	{
+		averageAttr += this->population[i].attractiveness;
+	}
+
+	return averageAttr / this->count;
+}
+
+double Population::getAverageFertility()
+{
+	double averageFertility = 0;
+
+	for (size_t i = 0; i < this->count; i++)
+	{
+		averageFertility += this->population[i].fertility;
+	}
+
+	return averageFertility / this->count;
+}
+
+double Population::getAverageMutationRate()
+{
+	double averageMut = 0;
+
+	for (size_t i = 0; i < this->count; i++)
+	{
+		averageMut += this->population[i].mutation_rate;
+	}
+
+	return averageMut / this->count;
+}
+
+void Population:: simYear() {
+
+}
+
+void Population::deletePopulation() {
+	::operator delete[](this->population);
 }

@@ -1,24 +1,25 @@
 #include "entity.h"
 
 entity::entity() {
-	srand(time(NULL));
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<double> rand{ 0.00, 1.00 };
+
 	for (size_t i = 0; i < 30; i++)
 	{
 		this->genome[i] = gene();
 	}
 
-	float value = (rand() % 100) / static_cast<float>(100);
+	double value = rand(gen);
 
-	srand(time(NULL));
 	this->attractiveness = value;
-	value = (rand() % 100) / static_cast<float>(100);
-	srand(time(NULL));
+	value = rand(gen);
 	this->fertility = value;
-	value = (rand() % 100) / static_cast<float>(100);
-	srand(time(NULL));
+	value = rand(gen);
 	this->fitness = value;
-	value = (rand() % 100) / static_cast<float>(100);
-	this->mutation_rate = value;
+	value = rand(gen);
+	std::uniform_real_distribution<double> nrand{ 0.00, 1.00 };
+	this->mutation_rate = value / 100;
 
 	this->init_attractiveness = this->attractiveness;
 	this->init_fertility = this->fertility;
@@ -29,8 +30,12 @@ entity::entity(entity father, entity mother) {
 	int index = 0;
 	int i = -1;
 
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> rand{ 0, 1 };
+
 	while (++i < 30) {
-		index = rand() % 2;
+		index = rand(gen);
 
 		if (index == 0) this->genome[i] = father.genome[i];
 		else this->genome[i] = mother.genome[i];

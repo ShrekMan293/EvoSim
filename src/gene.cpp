@@ -2,24 +2,34 @@
 #include <random>
 
 gene::gene() {
-	srand(time(NULL));
-	this->type = (geneType)(rand() % 16);
-	this->value = rand() % 100 / (float)100;
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> rand{ 0, 15 };
+
+	this->type = (geneType)rand(gen);
+
+
+	std::uniform_real_distribution<double> drand{ 0.00, 1.00 };
+	this->value = drand(gen);
 }
 
-gene::gene(geneType type, float value) {
+gene::gene(geneType type, double value) {
 	this->type = type;
 	this->value = value;
 }
 
 void gene::mutate() {
-	srand(time(NULL));
-	int mutate = rand() % 2;	// Generates 1 or 0
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> rand{ 0, 1 };
+	std::uniform_int_distribution<int> rand2{ 0, 3 };
+
+	int mutate = rand(gen);	// Generates 1 or 0
 	if (mutate) {
 		this->type = (geneType)((int)this->type ^ (int)this->type);
 	}
 	else {
-		int bitChange = rand() % 4;
+		int bitChange = rand2(gen);
 		switch (bitChange) {
 		case 0: this->type = (geneType)((int)this->type ^ 1); break;
 		case 1: this->type = (geneType)((int)this->type ^ 2); break;
@@ -34,7 +44,7 @@ geneType gene::getType() {
 	return this->type;
 }
 
-float gene::getValue() {
+double gene::getValue() {
 	return this->value;
 }
 

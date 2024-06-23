@@ -1,5 +1,6 @@
 #pragma once
 #include "common.h"
+#include <random>
 
 enum class geneType {
 	Mutation,
@@ -20,15 +21,15 @@ enum class geneType {
 	Color
 };
 
-void operator <<(const std::ostream& o, const geneType& g);
+void operator <<(std::ostream& o, const geneType& g);
 
 class gene {
 	geneType type;
-	float value;
+	double value;
 public:
 	gene();
-	gene(geneType type, float value);
+	gene(geneType type, double value);
 	void mutate();
 	geneType getType();
-	float getValue();
+	double getValue();
 };
