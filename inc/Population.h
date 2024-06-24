@@ -17,7 +17,14 @@ class Population
 	int64_t newBabies;
 	int64_t deaths;
 	size_t lastPopulation;
+
 public:
+	bool readyWorker1;
+	bool readyWorker2;
+	bool readyWorker3;
+	bool Worker1Finished;
+	bool Worker2Finished;
+	bool Worker3Finished;
 	entity* population;
 	Population(int count);
 	void killEntity(size_t id);
@@ -41,6 +48,7 @@ public:
 	growth_t growthRate();
 
 	void simYear();
+	void simGenes();
 
 	void deletePopulation();
 };

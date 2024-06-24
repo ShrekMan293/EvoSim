@@ -44,7 +44,7 @@ gene Population::mostCommonGene() {
 
 	for (size_t i = 0; i < this->count; i++) {
 		for (size_t j = 0; j < 30; j++) {
-			switch (this->population[i].getGene(j).getType()) {
+			switch (this->population[i].getGene(j)->getType()) {
 				case geneType::Mutation: app_0++; break;
 				case geneType::Fitness: app_1++; break;
 				case geneType::Attractiveness: app_2++; break;
@@ -90,8 +90,8 @@ gene Population::mostCommonGene() {
 
 	for (size_t i = 0; i < this->count; i++) {
 		for (size_t j = 0; j < 30; j++) {
-			if (this->population[i].getGene(j).getType() == mostCommon) {
-				average += this->population[i].getGene(j).getValue();
+			if (this->population[i].getGene(j)->getType() == mostCommon) {
+				average += this->population[i].getGene(j)->getValue();
 				count++;
 			}
 		}
@@ -189,31 +189,141 @@ growth_t Population::growthRate() {
 	return g;
 }
 
+void simYearWrapper(Population* obj, int index) {
+	obj->simYear();
+
+	switch (index) {
+	case 1: while (!obj->readyWorker1); break;
+	case 2: while (!obj->readyWorker2); break;
+	case 3: while (!obj->readyWorker3); break;
+	}
+}
+
 void Population::simYear() {
 	this->year++;
 	this->lastPopulation = this->count;
 	this->newBabies = 0;
 	this->deaths = 0;
+
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_real_distribution<double> rand{ 0.00, 0.40 };
-	std::uniform_real_distribution<double> rand2{ 0.00, 0.30 };
-	std::uniform_real_distribution<double> rand3{ 0.00, 0.60 };
-	std::uniform_real_distribution<double> rand4{ 0.00, 2.00 };
-	std::uniform_real_distribution<double> rand5{ 0.00, 1.00 };
+	std::uniform_real_distribution<double> rand{ 0.00, 0.20 };
+	std::uniform_real_distribution<double> rand2{ 0.00, 0.15 };
+	std::uniform_real_distribution<double> rand3{ 0.00, 0.30 };
+	std::uniform_real_distribution<double> rand4{ 0.00, 1.00 };
 
-	std::uniform_real_distribution<double> extinction{ 0.000000, 1.000000 };
+	std::uniform_real_distribution<double> rand5{ 0.000000, 1.000000 };
+	std::uniform_int_distribution<int> rand6{ 0, 29 };
 
 	double fitnessThreshold = (rand(gen) + rand2(gen) + rand3(gen) + rand4(gen)) / 4;
-	double mass_extinction = extinction(gen);
+	double mass_extinction = rand5(gen);
 
-	if (mass_extinction < 0.02) {
+	for (size_t i = 0; i < this->count; i++)
+	{
+		for (size_t j = 0; j < 3; j++)
+		{	// Division by 20 for most of these because lifespan is 20
+			gene* g = this->population[i].getGene(rand6(gen));
+
+			switch (g->getType()) {
+			case geneType::Mutation: {
+				this->population[i].mutation_rate *= g->getValue();
+				break;
+			}
+			case geneType::Fitness: {
+				this->population[i].fitness -= (g->getValue() - this->population[i].fitness) / 20;
+				this->population[i].init_fitness = g->getValue();
+				break;
+			}
+			case geneType::Attractiveness: {
+				this->population[i].attractiveness -= (g->getValue() - this->population[i].attractiveness) / 20;
+				this->population[i].init_attractiveness = g->getValue();
+				break;
+			}
+			case geneType::Intelligence: {
+				if (g->getValue() < 0.5) this->population[i].fitness -= g->getValue() / 20;
+				else this->population[i].fitness += g->getValue() / 20;
+				break;
+			}
+			case geneType::Size: {
+				if (g->getValue() < 0.5) this->population[i].fitness -= g->getValue() / 10;	// Size plays a bigger role
+				else this->population[i].fitness += g->getValue() / 10;
+				break;
+			}
+			case geneType::Strength: {
+				if (g->getValue() < 0.5) this->population[i].fitness -= g->getValue() / 5;	// Strength plays an even bigger role
+				else this->population[i].fitness += g->getValue() / 5;
+				break;
+			}
+			case geneType::Longevity: {
+				if (g->getValue() > 0.8) this->population[i].lifespan++;
+				else if (g->getValue() < 0.2) this->population[i].lifespan--;
+
+				if (this->population[i].lifespan > 35) {
+					j = 3;
+					killEntity(i);
+				}
+				break;
+			}
+			case geneType::Speed: {
+				if (g->getValue() < 0.5) this->population[i].fitness -= g->getValue() / 7.5;	// Speed plays a relatively large role
+				else this->population[i].fitness += g->getValue() / 7.5;
+				break;
+			}
+			case geneType::Resilience: {
+				if (g->getValue() > 0.8) {
+					this->population[i].age -= 1;
+					this->population[i].fitness += g->getValue() / 5;
+				}
+				else if (g->getValue() < 0.2) {
+					this->population[i].age += 1;
+					this->population[i].fitness -= g->getValue() / 5;
+				}
+				break;
+			}
+			case geneType::Metabolism: {
+				if (g->getValue() > 0.8) this->population[i].fitness -= g->getValue() / 20;
+				else if (g->getValue() < 0.2) this->population[i].fitness += g->getValue() / 20;
+				break;
+			}
+			case geneType::Immune: {
+				this->population[i].fitness += (g->getValue() / 10) * g->getValue();
+				break;
+			}
+			case geneType::Happiness: {
+				if (g->getValue() < 0.5) this->population[i].fitness -= g->getValue() / 12.5;	// Happiness plays a bigger role than you expect
+				else this->population[i].fitness += g->getValue() / 12.5;
+				break;
+			}
+			case geneType::Disease: {
+				this->population[i].fitness += (g->getValue() / 20) / g->getValue();	// Divison by a decimal makes it larger, so lower equals better
+				break;
+			}
+			case geneType::Fertility: {
+				this->population[i].fertility -= (g->getValue() - this->population[i].fertility) / 20;
+				this->population[i].init_fertility = g->getValue();
+				break;
+			}
+			case geneType::Socialness: {
+				if (g->getValue() < 0.5) this->population[i].attractiveness -= g->getValue() / 15;
+				else this->population[i].attractiveness += g->getValue() / 15;
+				break;
+			}
+			case geneType::Color: {
+				if (g->getValue() < 0.5) this->population[i].attractiveness -= g->getValue() / 7.5;	// Natural selection
+				else this->population[i].attractiveness += g->getValue() / 12.5;
+				break;
+			}
+			}
+		}
+	}
+
+	if (mass_extinction < 0.01) {
 		const double death_rate = 0.85;	// 85% of the population will be killed
 
-		for (size_t i = 0; i < this->count * death_rate; i++)
-		{
+		for (size_t i = 0; i < this->count * death_rate; i++) {
 			killEntity(i);
 		}
+		
 		for (size_t i = 0; i < this->count; i++)
 		{
 			double value = rand5(gen);
@@ -230,7 +340,10 @@ void Population::simYear() {
 
 	for (size_t i = 0; i < this->count; i++)
 	{
-
+		for (size_t j = 0; j < 30; j++)
+		{
+			if (rand5(gen) <= this->population[i].mutation_rate) this->population[i].getGene(j)->mutate();
+		}
 	}
 
 	for (size_t i = 0; i < this->count; i++)
@@ -240,23 +353,23 @@ void Population::simYear() {
 			killEntity(i);
 			continue;
 		}
-		if (this->population[i].age++ == 20) {
+		if (this->population[i].age++ == this->population[i].lifespan) {
 			this->deaths++;
 			killEntity(i);
 			continue;
 		}
 	}
+
 	for (size_t i = 0; i < this->count; i++)
 	{
+		this->population[i].fertility += this->population[i].fitness / 15;	// Fitness = Fertility
 		int female = 0;
-		if (this->population[i].gender || this->population[i].age < 5) continue;
-
+		if (this->population[i].gender || this->population[i].age < 5 || this->population[i].age > 15) continue;
 		for (size_t j = 0; j < this->count; j++)
 		{
-			if (!this->population[j].gender || this->population[j].age < 5) continue;
+			if (!this->population[j].gender || this->population[j].age < 5 || this->population[i].age > 15) continue;
 			female = j; break;
 		}
-
 		for (size_t j = 0; j < 3; j++)
 		{
 			if (attractivenessTest(this->population[i], this->population[female])) {
@@ -274,7 +387,6 @@ void Population::simYear() {
 			}
 		}
 	}
-
 }
 
 void Population::deletePopulation() {

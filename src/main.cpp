@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
 
 	do
 	{
-		cout << "\nYear " << p.getYear() << ":\n";
+		cout << "\nYear " << p.getYear() + 1 << ":\n";
 		p.simYear();
 		cout << "Population: " << p.getPopulationSize() << '\n';
 		cout << "Male Population: " << p.getMales() << '\n';
@@ -25,8 +25,12 @@ int main(int argc, char** argv) {
 		cout << p.mostCommonGene().getType();
 		cout << "(" << p.mostCommonGene().getValue() << ")\n";
 
+		if (p.growthRate().growth_double < 0 && p.getYear() - 1 >= 10 && p.getPopulationSize() < 16) {
+			cout << "\nPopulation likely to die out.\n";
+		}
 
-	} while (p.getPopulationSize() > 0 && p.getYear() < 500);
+
+	} while (p.getPopulationSize() > 0 && p.getYear() < 1024);
 	
 	if (p.getPopulationSize() == 0) {
 		cout << "\n\nPopulation died out in year " << p.getYear() << ".\n";

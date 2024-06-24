@@ -1,6 +1,7 @@
 #include "entity.h"
 
 entity::entity() {
+	this->lifespan = 20;
 	this->age = 0;
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -30,6 +31,7 @@ entity::entity() {
 }
 
 entity::entity(entity father, entity mother) {
+	this->lifespan = 20;
 	this->age = 0;
 	int index = 0;
 	int i = -1;
@@ -56,6 +58,6 @@ entity::entity(entity father, entity mother) {
 	this->gender = rand(gen);
 }
 
-gene entity::getGene(int index) const {
-	return this->genome[index];
+gene* entity::getGene(int index) const {
+	return (gene*)this->genome + index;
 }

@@ -6,6 +6,7 @@ class entity {
 	
 public:
 	int age;
+	int lifespan;
 	bool gender; // 0 is female, 1 is male
 	double init_attractiveness;
 	double init_fitness;
@@ -17,5 +18,5 @@ public:
 	double mutation_rate;
 	entity();
 	entity(entity father, entity mother);
-	gene getGene(int index) const;
+	gene* getGene(int index) const;
 };

@@ -8,6 +8,11 @@ gene::gene() {
 
 	this->type = (geneType)rand(gen);
 
+	if (this->type == geneType::Mutation) {
+		std::uniform_real_distribution<double> drand{ 0.00, 2.00 };
+		this->value = drand(gen);
+		return;
+	}
 
 	std::uniform_real_distribution<double> drand{ 0.00, 1.00 };
 	this->value = drand(gen);
